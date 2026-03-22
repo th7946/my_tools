@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>我的工具箱 - 平台工具收集器</title>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'SF Pro Text', 'Inter', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f6f9fc 0%, #eef2f7 100%);
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 1rem;
+        }
+        .title-section h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1E2A3A, #2C3E50);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+        }
+        .title-section p {
+            color: #5a6874;
+            margin-top: 0.3rem;
+            font-weight: 500;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            border: none;
+            background: white;
+            padding: 8px 18px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03), 0 1px 2px rgba(0,0,0,0.05);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: #1e2f3f;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .btn-primary:hover {
+            background: #0f1e2b;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.2);
+        }
+        .btn-outline {
+            background: rgba(255,255,255,0.8);
+            border: 1px solid #cddfe7;
+            color: #2c3e50;
+        }
+        .btn-outline:hover {
+            background: white;
+            border-color: #1e2f3f;
+            transform: translateY(-1px);
+        }
+        .search-bar {
+            margin-bottom: 2rem;
+            position: relative;
+            max-width: 380px;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 12px 20px 12px 44px;
+            border-radius: 60px;
+            border: 1px solid #dce5ec;
+            background: white;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .search-bar input:focus {
+            outline: none;
+            border-color: #1e2f3f;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .search-bar::before {
+            content: "🔍";
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.1rem;
+            opacity: 0.7;
+        }
+        .search-clear {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #eef2f7;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            color: #5a6874;
+        }
+        .search-clear:hover {
+            background: #cddfe7;
+            color: #1e2a3a;
+        }
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.5rem;
+            margin-top: 0.5rem;
+        }
+        .tool-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(2px);
+            border-radius: 28px;
+            padding: 1.2rem 1.3rem 1.3rem 1.3rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.02), 0 2px 4px rgba(0, 0, 0, 0.02);
+            transition: all 0.25s ease;
+            border: 1px solid rgba(255,255,255,0.6);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .tool-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.12);
+            background: white;
+            border-color: #d0e2ee;
+        }
+        .sortable-drag {
+            opacity: 0.4;
+            transform: scale(0.97);
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+        .tool-icon {
+            width: 80px;
+            height: 80px;
+            background: #f0f4f9;
+            border-radius: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.8rem;
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.02), 0 4px 8px rgba(0,0,0,0.02);
+            overflow: hidden;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .tool-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            image-rendering: auto;
+            image-rendering: smooth;
+        }
+        .tool-icon .emoji-fallback {
+            font-size: 2.8rem;
+            line-height: 1;
+        }
+        /* 加载动画 */
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e0e7ef;
+            border-top-color: #1e2f3f;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .tool-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1a2c3c;
+            letter-spacing: -0.2px;
+            word-break: break-word;
+        }
+        .tool-desc {
+            color: #4b5e6c;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            margin: 8px 0 16px 0;
+            flex: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .card-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 6px;
+            border-top: 1px solid #eef2f7;
+            padding-top: 14px;
+        }
+        .card-action-btn {
+            background: transparent;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 40px;
+            transition: 0.15s;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #4a6272;
+        }
+        .card-action-btn:hover {
+            background: #f0f4fa;
+            color: #1e2f3f;
+        }
+        .card-action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: transparent;
+        }
+        .btn-link {
+            background: #eef2fa;
+            color: #1e2f3f;
+            font-weight: 600;
+        }
+        .btn-link:hover {
+            background: #e2e9f2;
+        }
+        .delete-btn:hover {
+            color: #d9534f;
+            background: #fee9e7;
+        }
+        .refresh-icon-btn:hover {
+            background: #e2e9f2;
+            color: #1e2f3f;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: rgba(255,255,255,0.6);
+            border-radius: 48px;
+            color: #6c7f8c;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s ease;
+        }
+        .modal-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-container {
+            background: white;
+            max-width: 500px;
+            width: 90%;
+            border-radius: 36px;
+            padding: 1.8rem;
+            box-shadow: 0 30px 40px rgba(0,0,0,0.2);
+            transform: scale(0.96);
+            transition: transform 0.2s;
+        }
+        .modal-overlay.active .modal-container {
+            transform: scale(1);
+        }
+        .modal-container h3 {
+            font-size: 1.6rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #2c3e50;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 24px;
+            border: 1px solid #cddfe7;
+            font-size: 0.95rem;
+            transition: 0.2s;
+            background: #fefefe;
+        }
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #1e2f3f;
+            box-shadow: 0 0 0 3px rgba(30,47,63,0.1);
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 1.8rem;
+        }
+        .badge-info {
+            background: #eef2f7;
+            font-size: 0.7rem;
+            border-radius: 20px;
+            padding: 3px 8px;
+            display: inline-block;
+            margin-top: 8px;
+            color: #2c3e50;
+        }
+        footer {
+            margin-top: 3rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #8a9aa8;
+        }
+        /* 移动端适配 */
+        @media (max-width: 640px) {
+            body {
+                padding: 1rem;
+            }
+            .title-section h1 {
+                font-size: 1.7rem;
+            }
+            .tool-icon {
+                width: 64px;
+                height: 64px;
+                border-radius: 28px;
+                font-size: 2.4rem;
+            }
+            .tool-icon img {
+                width: 100%;
+                height: 100%;
+            }
+            .tool-icon .emoji-fallback {
+                font-size: 2.4rem;
+            }
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+            .tool-name {
+                font-size: 1.2rem;
+            }
+            .loading-spinner {
+                width: 30px;
+                height: 30px;
+                border-width: 3px;
+            }
+        }
+        .drag-handle-area {
+            cursor: grab;
+        }
+        .no-drag {
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="title-section">
+            <h1>🧰 工具百宝箱</h1>
+            <p>收集 · 整理 · 启动 · 你的专属工作台</p>
+        </div>
+        <div class="action-buttons">
+            <button class="btn btn-primary" id="addToolBtn">➕ 添加工具</button>
+            <button class="btn btn-outline" id="exportBtn">📤 导出数据</button>
+            <button class="btn btn-outline" id="importBtn">📥 导入数据</button>
+            <button class="btn btn-outline" id="resetSampleBtn">✨ 重置示例</button>
+        </div>
+    </div>
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="搜索工具名称或描述..." autocomplete="off">
+        <span class="search-clear" id="clearSearchBtn" style="display: none;">✖️</span>
+    </div>
+    <div id="toolsGridContainer" class="tools-grid"></div>
+    <footer>💡 拖拽卡片可排序 | 导出为 TXT（名称+链接） | 图标加载完成前会显示转圈动画</footer>
+</div>
+
+<!-- 模态框 -->
+<div id="toolModal" class="modal-overlay">
+    <div class="modal-container">
+        <h3 id="modalTitle">添加新工具</h3>
+        <form id="toolForm">
+            <div class="form-group">
+                <label>🔤 备用图标 (Emoji)</label>
+                <input type="text" id="toolEmoji" placeholder="例如: 🚀" maxlength="6" value="🔧">
+                <div class="badge-info">当所有图标获取失败时显示</div>
+            </div>
+            <div class="form-group">
+                <label>🖼️ 自定义图标 URL (可选)</label>
+                <input type="url" id="toolIconUrl" placeholder="https://.../icon.png 或留空自动获取">
+                <div class="badge-info">优先使用此地址，留空则自动尝试多个高清 favicon 服务</div>
+            </div>
+            <div class="form-group">
+                <label>📛 名称 *</label>
+                <input type="text" id="toolName" placeholder="例如: GitHub" required>
+            </div>
+            <div class="form-group">
+                <label>📝 描述</label>
+                <textarea id="toolDesc" rows="2" placeholder="简短介绍这个工具..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>🔗 链接 *</label>
+                <input type="url" id="toolUrl" placeholder="https:// 或 http://" required>
+            </div>
+            <div class="modal-buttons">
+                <button type="button" class="btn btn-outline" id="cancelModalBtn">取消</button>
+                <button type="submit" class="btn btn-primary">保存工具</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const STORAGE_KEY = 'user_tools_collection';
+    const DEFAULT_TOOLS = [
+        { id: 1001, emoji: "🐙", name: "GitHub", description: "代码托管与协作平台，开源世界的核心", url: "https://github.com", iconUrl: "", cachedIcon: "" },
+        { id: 1002, emoji: "💻", name: "VS Code", description: "轻量但强大的代码编辑器", url: "https://code.visualstudio.com", iconUrl: "", cachedIcon: "" },
+        { id: 1003, emoji: "🎨", name: "Figma", description: "UI/UX 设计协作工具", url: "https://figma.com", iconUrl: "", cachedIcon: "" },
+        { id: 1004, emoji: "📮", name: "Postman", description: "API 开发和测试利器", url: "https://postman.com", iconUrl: "", cachedIcon: "" },
+        { id: 1005, emoji: "💬", name: "Slack", description: "团队沟通与协作平台", url: "https://slack.com", iconUrl: "", cachedIcon: "" },
+        { id: 1006, emoji: "📝", name: "Notion", description: "笔记、数据库与项目管理", url: "https://notion.so", iconUrl: "", cachedIcon: "" },
+        { id: 1007, emoji: "☁️", name: "Cloudflare", description: "网络性能与安全服务", url: "https://cloudflare.com", iconUrl: "", cachedIcon: "" }
+    ];
+
+    let tools = [];
+    let editingId = null;
+    let searchKeyword = '';
+    let sortableInstance = null;
+
+    const gridContainer = document.getElementById('toolsGridContainer');
+    const searchInput = document.getElementById('searchInput');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    const addToolBtn = document.getElementById('addToolBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const importBtn = document.getElementById('importBtn');
+    const resetSampleBtn = document.getElementById('resetSampleBtn');
+    const modalOverlay = document.getElementById('toolModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const toolForm = document.getElementById('toolForm');
+    const toolEmoji = document.getElementById('toolEmoji');
+    const toolIconUrl = document.getElementById('toolIconUrl');
+    const toolName = document.getElementById('toolName');
+    const toolDesc = document.getElementById('toolDesc');
+    const toolUrl = document.getElementById('toolUrl');
+    const cancelModalBtn = document.getElementById('cancelModalBtn');
+
+    function loadFromStorage() {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(parsed) && parsed.length) {
+                    tools = parsed.map(t => ({ 
+                        ...t, 
+                        iconUrl: t.iconUrl || '', 
+                        cachedIcon: t.cachedIcon || '' 
+                    }));
+                    return;
+                }
+            } catch(e) {}
+        }
+        tools = JSON.parse(JSON.stringify(DEFAULT_TOOLS));
+        saveToStorage();
+    }
+
+    function saveToStorage() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tools));
+    }
+
+    function getDomainFromUrl(url) {
+        try {
+            const urlObj = new URL(url);
+            return urlObj.hostname;
+        } catch(e) {
+            return '';
+        }
+    }
+
+    // 获取高清图标的多个源（按清晰度优先级排序）
+    function getFaviconUrls(domain) {
+        if (!domain) return [];
+        return [
+            `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
+            `https://icon.horse/icon/${domain}`,
+            `https://icons.duckduckgo.com/ip3/${domain}.ico`,
+            `https://favicon.yandex.net/favicon/${domain}`
+        ];
+    }
+
+    function updateToolCachedIcon(toolId, iconUrl) {
+        const tool = tools.find(t => t.id === toolId);
+        if (tool && tool.cachedIcon !== iconUrl) {
+            tool.cachedIcon = iconUrl;
+            saveToStorage();
+        }
+    }
+
+    function clearToolCachedIcon(toolId) {
+        const tool = tools.find(t => t.id === toolId);
+        if (tool && tool.cachedIcon) {
+            tool.cachedIcon = '';
+            saveToStorage();
+        }
+    }
+
+    // 异步获取图标内容，返回 Promise<HTMLElement> (img 或 span)
+    function fetchIconContent(tool) {
+        return new Promise((resolve) => {
+            const { iconUrl: customIcon, cachedIcon, emoji, url: websiteUrl, id } = tool;
+            const fallbackEmoji = emoji || '🔧';
+
+            // 自定义图标优先
+            if (customIcon && customIcon.trim() !== '') {
+                const img = document.createElement('img');
+                img.src = customIcon;
+                img.alt = "icon";
+                img.onload = () => {
+                    updateToolCachedIcon(id, customIcon);
+                    resolve(img);
+                };
+                img.onerror = () => {
+                    clearToolCachedIcon(id);
+                    // 自定义失败，尝试自动获取
+                    loadFromNetwork(resolve, tool, fallbackEmoji);
+                };
+                return;
+            }
+
+            // 缓存图标
+            if (cachedIcon && cachedIcon.trim() !== '') {
+                const img = document.createElement('img');
+                img.src = cachedIcon;
+                img.alt = "icon";
+                img.onload = () => {
+                    resolve(img);
+                };
+                img.onerror = () => {
+                    clearToolCachedIcon(id);
+                    loadFromNetwork(resolve, tool, fallbackEmoji);
+                };
+                return;
+            }
+
+            // 无缓存，从网络获取
+            loadFromNetwork(resolve, tool, fallbackEmoji);
+        });
+    }
+
+    function loadFromNetwork(resolve, tool, fallbackEmoji) {
+        const domain = getDomainFromUrl(tool.url);
+        const urls = getFaviconUrls(domain);
+        let index = 0;
+        const toolId = tool.id;
+
+        function tryNext() {
+            if (index >= urls.length) {
+                // 全部失败，返回 Emoji
+                const fallbackSpan = document.createElement('span');
+                fallbackSpan.className = 'emoji-fallback';
+                fallbackSpan.textContent = fallbackEmoji;
+                resolve(fallbackSpan);
+                clearToolCachedIcon(toolId);
+                return;
+            }
+            const currentUrl = urls[index];
+            const img = document.createElement('img');
+            img.src = currentUrl;
+            img.onload = () => {
+                updateToolCachedIcon(toolId, currentUrl);
+                resolve(img);
+            };
+            img.onerror = () => {
+                index++;
+                tryNext();
+            };
+        }
+        tryNext();
+    }
+
+    // 将图标内容加载到指定容器，并显示加载动画
+    async function loadIconIntoContainer(container, tool) {
+        // 清空容器并显示加载动画
+        container.innerHTML = '';
+        const spinner = document.createElement('div');
+        spinner.className = 'loading-spinner';
+        container.appendChild(spinner);
+
+        // 获取最终图标内容
+        const iconElement = await fetchIconContent(tool);
+        // 替换掉加载动画
+        container.innerHTML = '';
+        container.appendChild(iconElement);
+    }
+
+    // 创建图标元素（返回一个空容器，并开始异步加载）
+    function createIconElement(tool) {
+        const container = document.createElement('div');
+        loadIconIntoContainer(container, tool);
+        return container;
+    }
+
+    function updateCardElement(cardElement, tool) {
+        const nameEl = cardElement.querySelector('.tool-name');
+        const descEl = cardElement.querySelector('.tool-desc');
+        const iconContainer = cardElement.querySelector('.tool-icon');
+        const linkBtn = cardElement.querySelector('.btn-link');
+        
+        if (nameEl) nameEl.textContent = tool.name;
+        if (descEl) descEl.textContent = tool.description || '暂无描述';
+        if (linkBtn) linkBtn.href = tool.url;
+        
+        if (iconContainer) {
+            loadIconIntoContainer(iconContainer, tool);
+        }
+        
+        const editBtn = cardElement.querySelector('.edit-btn');
+        const deleteBtn = cardElement.querySelector('.delete-btn');
+        const refreshBtn = cardElement.querySelector('.refresh-icon-btn');
+        if (editBtn) editBtn.setAttribute('data-id', tool.id);
+        if (deleteBtn) deleteBtn.setAttribute('data-id', tool.id);
+        if (refreshBtn) refreshBtn.setAttribute('data-id', tool.id);
+        cardElement.setAttribute('data-id', tool.id);
+    }
+
+    function getFilteredTools() {
+        if (!searchKeyword.trim()) return [...tools];
+        const kw = searchKeyword.trim().toLowerCase();
+        return tools.filter(t => t.name.toLowerCase().includes(kw) || (t.description && t.description.toLowerCase().includes(kw)));
+    }
+
+    function renderGrid() {
+        const filtered = getFilteredTools();
+        if (!filtered.length) {
+            gridContainer.innerHTML = `<div class="empty-state">
+                <div style="font-size: 3rem; margin-bottom: 12px;">📭</div>
+                <p style="font-size: 1.1rem; font-weight: 500;">暂无工具</p>
+                <p style="margin-top: 8px;">点击「添加工具」或「重置示例」开始收集</p>
+            </div>`;
+            if (sortableInstance) sortableInstance.destroy();
+            sortableInstance = null;
+            return;
+        }
+
+        let html = '';
+        filtered.forEach(tool => {
+            const safeName = escapeHtml(tool.name);
+            const safeDesc = escapeHtml(tool.description || '暂无描述');
+            const safeUrl = escapeHtml(tool.url);
+            html += `
+                <div class="tool-card" data-id="${tool.id}">
+                    <div class="card-header">
+                        <div class="tool-icon" data-icon-placeholder="true"></div>
+                        <div class="tool-name">${safeName}</div>
+                    </div>
+                    <div class="tool-desc">${safeDesc}</div>
+                    <div class="card-actions">
+                        <a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="card-action-btn btn-link no-drag" style="text-decoration: none;">🔗 打开</a>
+                        <button class="card-action-btn refresh-icon-btn no-drag" data-id="${tool.id}">🔄 刷新图标</button>
+                        <button class="card-action-btn edit-btn no-drag" data-id="${tool.id}">✏️ 编辑</button>
+                        <button class="card-action-btn delete-btn no-drag" data-id="${tool.id}">🗑️ 删除</button>
+                    </div>
+                </div>
+            `;
+        });
+        gridContainer.innerHTML = html;
+
+        const cards = document.querySelectorAll('.tool-card');
+        cards.forEach(card => {
+            const toolId = Number(card.getAttribute('data-id'));
+            const tool = filtered.find(t => t.id === toolId);
+            if (tool) {
+                const iconContainer = card.querySelector('.tool-icon');
+                if (iconContainer) {
+                    loadIconIntoContainer(iconContainer, tool);
+                }
+            }
+        });
+
+        attachCardEvents();
+
+        if (sortableInstance) sortableInstance.destroy();
+        if (searchKeyword.trim() === '') {
+            sortableInstance = new Sortable(gridContainer, {
+                animation: 250,
+                handle: '.tool-card',
+                draggable: '.tool-card',
+                filter: '.no-drag',
+                preventOnFilter: true,
+                onEnd: function() {
+                    const cards = document.querySelectorAll('.tool-card');
+                    const newOrderIds = [];
+                    cards.forEach(card => {
+                        const id = Number(card.getAttribute('data-id'));
+                        if (!isNaN(id)) newOrderIds.push(id);
+                    });
+                    if (newOrderIds.length === tools.length) {
+                        const orderedTools = [];
+                        for (let id of newOrderIds) {
+                            const found = tools.find(t => t.id === id);
+                            if (found) orderedTools.push(found);
+                        }
+                        if (orderedTools.length === tools.length) {
+                            tools = orderedTools;
+                            saveToStorage();
+                        } else {
+                            renderGrid();
+                        }
+                    } else {
+                        renderGrid();
+                    }
+                }
+            });
+        } else {
+            sortableInstance = null;
+        }
+    }
+
+    function attachCardEvents() {
+        gridContainer.onclick = (e) => {
+            const editBtn = e.target.closest('.edit-btn');
+            const deleteBtn = e.target.closest('.delete-btn');
+            const refreshBtn = e.target.closest('.refresh-icon-btn');
+            if (editBtn) {
+                const id = Number(editBtn.getAttribute('data-id'));
+                openEditModal(id);
+                e.preventDefault();
+            } else if (deleteBtn) {
+                const id = Number(deleteBtn.getAttribute('data-id'));
+                if (confirm('确定要删除这个工具吗？')) {
+                    deleteToolById(id);
+                }
+                e.preventDefault();
+            } else if (refreshBtn) {
+                const id = Number(refreshBtn.getAttribute('data-id'));
+                refreshIconById(id, refreshBtn);
+                e.preventDefault();
+            }
+        };
+    }
+
+    async function refreshIconById(id, refreshButton) {
+        const tool = tools.find(t => t.id === id);
+        if (!tool) return;
+        
+        const card = document.querySelector(`.tool-card[data-id="${id}"]`);
+        if (!card) return;
+        
+        const iconContainer = card.querySelector('.tool-icon');
+        if (!iconContainer) return;
+        
+        if (refreshButton.disabled) return;
+        refreshButton.disabled = true;
+        
+        // 清除缓存
+        clearToolCachedIcon(id);
+        // 重新加载图标
+        await loadIconIntoContainer(iconContainer, tool);
+        
+        refreshButton.disabled = false;
+    }
+
+    function deleteToolById(id) {
+        const index = tools.findIndex(t => t.id === id);
+        if (index === -1) return;
+
+        if (searchKeyword.trim() !== '') {
+            tools.splice(index, 1);
+            saveToStorage();
+            renderGrid();
+            return;
+        }
+
+        const cardToRemove = document.querySelector(`.tool-card[data-id="${id}"]`);
+        if (cardToRemove) {
+            cardToRemove.remove();
+        }
+        tools.splice(index, 1);
+        saveToStorage();
+
+        if (tools.length === 0) {
+            renderGrid();
+        } else {
+            if (!sortableInstance && searchKeyword.trim() === '') {
+                sortableInstance = new Sortable(gridContainer, {
+                    animation: 250,
+                    handle: '.tool-card',
+                    draggable: '.tool-card',
+                    filter: '.no-drag',
+                    preventOnFilter: true,
+                    onEnd: function() {
+                        const cards = document.querySelectorAll('.tool-card');
+                        const newOrderIds = [];
+                        cards.forEach(card => {
+                            const id = Number(card.getAttribute('data-id'));
+                            if (!isNaN(id)) newOrderIds.push(id);
+                        });
+                        if (newOrderIds.length === tools.length) {
+                            const orderedTools = [];
+                            for (let id of newOrderIds) {
+                                const found = tools.find(t => t.id === id);
+                                if (found) orderedTools.push(found);
+                            }
+                            if (orderedTools.length === tools.length) {
+                                tools = orderedTools;
+                                saveToStorage();
+                            } else {
+                                renderGrid();
+                            }
+                        } else {
+                            renderGrid();
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    function persistAndRender() {
+        saveToStorage();
+        renderGrid();
+    }
+
+    function openAddModal() {
+        editingId = null;
+        modalTitle.innerText = '➕ 添加新工具';
+        toolForm.reset();
+        toolEmoji.value = '🔧';
+        toolIconUrl.value = '';
+        toolName.value = '';
+        toolDesc.value = '';
+        toolUrl.value = '';
+        modalOverlay.classList.add('active');
+    }
+
+    function openEditModal(id) {
+        const tool = tools.find(t => t.id === id);
+        if (!tool) return;
+        editingId = id;
+        modalTitle.innerText = '✏️ 编辑工具';
+        toolEmoji.value = tool.emoji || '🔧';
+        toolIconUrl.value = tool.iconUrl || '';
+        toolName.value = tool.name;
+        toolDesc.value = tool.description || '';
+        toolUrl.value = tool.url;
+        modalOverlay.classList.add('active');
+    }
+
+    function saveToolFromForm(event) {
+        event.preventDefault();
+        const emoji = toolEmoji.value.trim() || '🔧';
+        const iconUrl = toolIconUrl.value.trim();
+        const name = toolName.value.trim();
+        if (!name) { alert('请填写工具名称'); return; }
+        let url = toolUrl.value.trim();
+        if (!url) { alert('请填写链接地址'); return; }
+        if (!url.startsWith('http://') && !url.startsWith('https://')) url = 'https://' + url;
+        const description = toolDesc.value.trim();
+
+        if (editingId !== null) {
+            const index = tools.findIndex(t => t.id === editingId);
+            if (index !== -1) {
+                const oldTool = tools[index];
+                if (oldTool.url !== url || oldTool.iconUrl !== iconUrl) {
+                    clearToolCachedIcon(editingId);
+                }
+                const newTool = { ...oldTool, emoji, iconUrl, name, description, url };
+                tools[index] = newTool;
+                saveToStorage();
+                
+                if (searchKeyword.trim() !== '') {
+                    renderGrid();
+                } else {
+                    const card = document.querySelector(`.tool-card[data-id="${editingId}"]`);
+                    if (card) {
+                        updateCardElement(card, newTool);
+                    } else {
+                        renderGrid();
+                    }
+                }
+            }
+        } else {
+            const newId = Date.now();
+            const newTool = { id: newId, emoji, iconUrl, name, description, url, cachedIcon: '' };
+            tools.push(newTool);
+            saveToStorage();
+            if (searchKeyword.trim() !== '') {
+                renderGrid();
+            } else {
+                const safeName = escapeHtml(name);
+                const safeDesc = escapeHtml(description || '暂无描述');
+                const safeUrl = escapeHtml(url);
+                const newCardHtml = `
+                    <div class="tool-card" data-id="${newId}">
+                        <div class="card-header">
+                            <div class="tool-icon"></div>
+                            <div class="tool-name">${safeName}</div>
+                        </div>
+                        <div class="tool-desc">${safeDesc}</div>
+                        <div class="card-actions">
+                            <a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="card-action-btn btn-link no-drag" style="text-decoration: none;">🔗 打开</a>
+                            <button class="card-action-btn refresh-icon-btn no-drag" data-id="${newId}">🔄 刷新图标</button>
+                            <button class="card-action-btn edit-btn no-drag" data-id="${newId}">✏️ 编辑</button>
+                            <button class="card-action-btn delete-btn no-drag" data-id="${newId}">🗑️ 删除</button>
+                        </div>
+                    </div>
+                `;
+                gridContainer.insertAdjacentHTML('beforeend', newCardHtml);
+                const newCard = gridContainer.lastElementChild;
+                const iconContainer = newCard.querySelector('.tool-icon');
+                if (iconContainer) {
+                    loadIconIntoContainer(iconContainer, newTool);
+                }
+                attachCardEvents();
+            }
+        }
+        closeModal();
+    }
+
+    function closeModal() {
+        modalOverlay.classList.remove('active');
+        editingId = null;
+    }
+
+    function exportData() {
+        if (tools.length === 0) {
+            alert('没有工具可导出');
+            return;
+        }
+        let content = '';
+        for (const tool of tools) {
+            content += `${tool.name}\t${tool.url}\n`;
+        }
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const a = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        a.href = url;
+        a.download = `toolbox_links_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function importData() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'application/json';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    const imported = JSON.parse(ev.target.result);
+                    if (Array.isArray(imported)) {
+                        const validTools = imported.filter(item => item.name && item.url).map((item, idx) => ({
+                            id: item.id && typeof item.id === 'number' ? item.id : Date.now() + idx,
+                            emoji: item.emoji || '🔧',
+                            iconUrl: item.iconUrl || '',
+                            name: item.name,
+                            description: item.description || '',
+                            url: item.url,
+                            cachedIcon: ''
+                        }));
+                        if (validTools.length && confirm(`导入将替换当前所有工具（共${validTools.length}项），是否继续？`)) {
+                            tools = validTools;
+                            persistAndRender();
+                            alert('导入成功！');
+                        } else if (!validTools.length) alert('没有有效的工具数据');
+                    } else alert('JSON格式不是工具数组');
+                } catch(err) { alert('解析失败，请确保是有效的JSON文件'); }
+            };
+            reader.readAsText(file);
+        };
+        input.click();
+    }
+
+    function resetToSample() {
+        if (confirm('重置将使用预设的示例工具，并清除所有图标缓存，确认吗？')) {
+            tools = JSON.parse(JSON.stringify(DEFAULT_TOOLS));
+            tools.forEach(t => t.cachedIcon = '');
+            saveToStorage();
+            searchInput.value = '';
+            searchKeyword = '';
+            clearSearchBtn.style.display = 'none';
+            renderGrid();
+        }
+    }
+
+    function handleSearch() {
+        searchKeyword = searchInput.value;
+        clearSearchBtn.style.display = searchKeyword.trim() !== '' ? 'flex' : 'none';
+        renderGrid();
+    }
+
+    function clearSearch() {
+        searchInput.value = '';
+        searchKeyword = '';
+        clearSearchBtn.style.display = 'none';
+        renderGrid();
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function initEventListeners() {
+        addToolBtn.addEventListener('click', openAddModal);
+        cancelModalBtn.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
+        toolForm.addEventListener('submit', saveToolFromForm);
+        exportBtn.addEventListener('click', exportData);
+        importBtn.addEventListener('click', importData);
+        resetSampleBtn.addEventListener('click', resetToSample);
+        searchInput.addEventListener('input', handleSearch);
+        clearSearchBtn.addEventListener('click', clearSearch);
+    }
+
+    function init() {
+        loadFromStorage();
+        initEventListeners();
+        renderGrid();
+    }
+
+    init();
+</script>
+</body>
+</html>
